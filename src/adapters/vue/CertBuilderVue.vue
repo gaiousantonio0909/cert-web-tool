@@ -5,15 +5,18 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { CertBuilder } from '../../CertBuilder';
-import type { CertBuilderOptions, ShortcodeMap } from '../../types';
+import type { CertBuilderOptions, CertBuilderTheme, ShortcodeMap, Orientation } from '../../types';
 
 const props = withDefaults(
   defineProps<{
     width?: number;
     height?: number;
+    orientation?: Orientation;
     shortcodes?: string[];
+    onUpload?: (file: File) => Promise<string>;
+    theme?: CertBuilderTheme;
   }>(),
-  { width: 794, height: 1123, shortcodes: () => [] },
+  { width: undefined, height: undefined, orientation: undefined, shortcodes: () => [], onUpload: undefined, theme: undefined },
 );
 
 const emit = defineEmits<{
@@ -28,11 +31,14 @@ onMounted(() => {
   if (!containerRef.value) return;
   const options: CertBuilderOptions = {
     container: containerRef.value,
-    width: props.width,
-    height: props.height,
+    ...(props.width != null && { width: props.width }),
+    ...(props.height != null && { height: props.height }),
+    orientation: props.orientation,
     shortcodes: props.shortcodes,
     onSave: (html) => emit('save', html),
     onLoad: () => emit('load'),
+    onUpload: props.onUpload,
+    theme: props.theme,
   };
   builderInstance = new CertBuilder(options);
 });

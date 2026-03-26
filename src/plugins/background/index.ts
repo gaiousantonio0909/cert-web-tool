@@ -8,7 +8,7 @@ export function registerBackgroundPlugin(
   editor: any,
   options: CertBuilderOptions,
 ): void {
-  const { width = 794, height = 1123 } = options;
+  const { width = 794, height = 1123, onUpload } = options;
 
   editor.DomComponents.addType(TYPE_ID, {
     model: {
@@ -47,11 +47,55 @@ export function registerBackgroundPlugin(
             ],
             changeProp: true,
           },
+          {
+            type: 'number',
+            name: 'paddingTop',
+            label: 'Padding Top (px)',
+            changeProp: true,
+            default: 0,
+            min: 0,
+          },
+          {
+            type: 'number',
+            name: 'paddingRight',
+            label: 'Padding Right (px)',
+            changeProp: true,
+            default: 0,
+            min: 0,
+          },
+          {
+            type: 'number',
+            name: 'paddingBottom',
+            label: 'Padding Bottom (px)',
+            changeProp: true,
+            default: 0,
+            min: 0,
+          },
+          {
+            type: 'number',
+            name: 'paddingLeft',
+            label: 'Padding Left (px)',
+            changeProp: true,
+            default: 0,
+            min: 0,
+          },
         ],
       },
       init(this: any) {
         this.listenTo(this, 'change:backgroundImage', this.onBgImageChange);
         this.listenTo(this, 'change:backgroundSize', this.onBgSizeChange);
+        this.listenTo(this, 'change:paddingTop', this.onPaddingChange);
+        this.listenTo(this, 'change:paddingRight', this.onPaddingChange);
+        this.listenTo(this, 'change:paddingBottom', this.onPaddingChange);
+        this.listenTo(this, 'change:paddingLeft', this.onPaddingChange);
+      },
+      onPaddingChange(this: any) {
+        this.addStyle({
+          'padding-top': `${this.get('paddingTop') || 0}px`,
+          'padding-right': `${this.get('paddingRight') || 0}px`,
+          'padding-bottom': `${this.get('paddingBottom') || 0}px`,
+          'padding-left': `${this.get('paddingLeft') || 0}px`,
+        });
       },
       onBgImageChange(this: any) {
         const url = this.get('backgroundImage') as string;
@@ -67,6 +111,65 @@ export function registerBackgroundPlugin(
       },
     },
   });
+
+  // ── File-upload trait (shown only when onUpload is provided) ──
+  if (onUpload) {
+    editor.TraitManager.addType('cert-file-upload', {
+      createInput({ trait }: any) {
+        const el = document.createElement('div');
+        el.innerHTML = `
+          <label
+            style="display:inline-flex;align-items:center;gap:6px;padding:6px 10px;
+                   border:1px dashed var(--cb-border,#cbd5e0);border-radius:4px;
+                   cursor:pointer;font-size:12px;color:var(--cb-text,#4a5568);width:100%;
+                   box-sizing:border-box;"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span class="cb-upload-label">Upload Image</span>
+            <input type="file" accept="image/*" style="display:none;" />
+          </label>
+        `;
+        const input = el.querySelector('input') as HTMLInputElement;
+        const label = el.querySelector('.cb-upload-label') as HTMLSpanElement;
+        input.addEventListener('change', async () => {
+          const file = input.files?.[0];
+          if (!file) return;
+          label.textContent = 'Uploading…';
+          try {
+            const url = await onUpload(file);
+            const component = editor.getSelected();
+            if (component) {
+              component.set('backgroundImage', url);
+              component.trigger('change:backgroundImage');
+            }
+            label.textContent = 'Uploaded ✓';
+          } catch {
+            label.textContent = 'Upload failed';
+          }
+          setTimeout(() => { label.textContent = 'Upload Image'; }, 2500);
+          input.value = '';
+        });
+        return el;
+      },
+      onUpdate({ trait, elInput, component }: any) {
+        // no-op — we push values imperatively above
+      },
+    });
+
+    // Extend the background type to include the upload trait
+    const origDefaults = editor.DomComponents.getType(TYPE_ID).model.prototype.defaults;
+    const traits = [...(origDefaults.traits || [])];
+    traits.push({
+      type: 'cert-file-upload',
+      name: 'backgroundUpload',
+      label: 'Upload Background',
+    });
+    origDefaults.traits = traits;
+  }
 
   editor.BlockManager.add(BLOCK_ID, {
     id: BLOCK_ID,

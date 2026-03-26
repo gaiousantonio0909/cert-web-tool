@@ -1,6 +1,6 @@
 {
   "name": "cert-builder",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A certificate builder powered by GrapeJS with CKEditor4, shortcodes, and PDF export",
   "main": "dist/index.cjs.js",
   "module": "dist/index.esm.js",
@@ -14,7 +14,12 @@
     "./react": {
       "import": "./dist/react/index.esm.js",
       "require": "./dist/react/index.cjs.js",
-      "types": "./dist/react/types/adapters/react/index.d.ts"
+      "types": "./dist/types/adapters/react/index.d.ts"
+    },
+    "./vue": {
+      "import": "./dist/vue/index.esm.js",
+      "require": "./dist/vue/index.cjs.js",
+      "types": "./dist/types/adapters/vue/index.d.ts"
     }
   },
   "files": [
@@ -78,5 +83,8 @@
   ],
   "author": "gaiousantonio0909",
   "license": "MIT",
-  "packageManager": "pnpm@9.15.0"
+  "packageManager": "pnpm@9.15.0",
+  "dependencies": {
+    "grapesjs-blocks-flexbox": "^1.0.1"
+  }
 }

@@ -25,10 +25,9 @@ export default [
     ],
     external,
     plugins: [
-      vue(),
-      postcss(),
-      esbuild({ target: 'es2020', jsx: 'automatic' }),
-      resolve({ extensions: ['.ts', '.tsx', '.js', '.vue'] }),
+      postcss({ inject: true, minimize: true }),
+      esbuild({ target: 'es2020' }),
+      resolve({ extensions: ['.ts', '.js', '.css'] }),
       commonjs(),
     ],
   },
@@ -42,8 +41,26 @@ export default [
     ],
     external: [...external, 'cert-builder'],
     plugins: [
+      postcss({ inject: true, minimize: true }),
       esbuild({ target: 'es2020', jsx: 'automatic' }),
-      resolve({ extensions: ['.ts', '.tsx', '.js'] }),
+      resolve({ extensions: ['.ts', '.tsx', '.js', '.css'] }),
+      commonjs(),
+    ],
+  },
+
+  // ── Vue adapter (CJS + ESM) ──────────────────────────────
+  {
+    input: 'src/adapters/vue/index.ts',
+    output: [
+      { file: 'dist/vue/index.cjs.js', format: 'cjs', sourcemap: true, exports: 'named' },
+      { file: 'dist/vue/index.esm.js', format: 'es', sourcemap: true },
+    ],
+    external: [...external, 'cert-builder'],
+    plugins: [
+      vue(),
+      postcss(),
+      esbuild({ target: 'es2020' }),
+      resolve({ extensions: ['.ts', '.js', '.vue'] }),
       commonjs(),
     ],
   },
