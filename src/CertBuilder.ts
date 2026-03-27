@@ -90,9 +90,7 @@ function buildThemeCss(t: Required<CertBuilderTheme>): string {
     .gjs-rte-action { padding: 2px 6px !important; border: none !important; background: none !important;
       cursor: pointer; border-radius: 3px !important; }
     .gjs-rte-action:hover { background: #f0f4f8 !important; }
-    .gjs-rte-action:has(select) { width: auto !important; display: inline-flex !important; align-items: center !important; }
-    .gjs-rte-action select { border: 1px solid var(--cb-border, #e2e8f0); border-radius: 3px;
-      padding: 2px 4px; font-size: 12px; background: #fff; cursor: pointer; min-width: 150px; }
+    .gjs-rte-action:last-child { width: auto !important; min-width: 90px !important; }
     `;
 }
 
